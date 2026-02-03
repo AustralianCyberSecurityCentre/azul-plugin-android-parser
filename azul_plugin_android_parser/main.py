@@ -65,22 +65,22 @@ class AzulPluginAndroidParser(BinaryPlugin):
         Feature("apk_dex_count", "Indicates weather the APK is multi-dex", type=FeatureType.Integer),
         Feature(
             "apk_intent_filters",
-            "All of the intent filters in an application" "(not separated by type)",
+            "All of the intent filters in an application(not separated by type)",
             type=FeatureType.String,
         ),
         Feature(
             "apk_signature_hashes",
-            "SHA256 hashes of all of the signatures applied to the " "certificate",
+            "SHA256 hashes of all of the signatures applied to the certificate",
             type=FeatureType.String,
         ),
         Feature(
             "apk_signature_types",
-            "3 bit value indicating the version of the signature(s)." " Bits 0, 1 and 2 correspond to v1, v2 and v3",
+            "3 bit value indicating the version of the signature(s). Bits 0, 1 and 2 correspond to v1, v2 and v3",
             type=FeatureType.Integer,
         ),
         Feature(
             "apk_cert_fingerprint",
-            "The SHA256 fingerprint of the certificate(s) issued to " "the APK",
+            "The SHA256 fingerprint of the certificate(s) issued to the APK",
             type=FeatureType.String,
         ),
         Feature("apk_cert_issuer", "The issuer of the certificate", type=FeatureType.String),

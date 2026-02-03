@@ -197,7 +197,7 @@ class ApkParse:
                     "Country: ",
                 )
                 short_words = ("CN=", "OU=", "O=", "L=", "ST=", "C=")
-                for l_word, s_word in zip(long_words, short_words):
+                for l_word, s_word in zip(long_words, short_words, strict=False):
                     issuer = issuer.replace(l_word, s_word)
                     subject = subject.replace(l_word, s_word)
                 certs[str(cert.sha256_fingerprint.replace(" ", "").lower())] = SdkCertificate(

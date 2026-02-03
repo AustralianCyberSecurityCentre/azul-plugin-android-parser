@@ -6,7 +6,6 @@ from azul_plugin_android_parser.apk_parse import ApkParse, SdkBuildInfo
 
 
 class TestApkParse(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.file_manager = FileManager()
