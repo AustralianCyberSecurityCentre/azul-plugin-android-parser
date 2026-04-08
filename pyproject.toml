@@ -25,6 +25,7 @@ classifiers=[
 ]
 dependencies = [
     "androguard>4.0",
+    "azul-bedrock>=11.0.26",
     "azul-runner>=9.0.38",
     "click>=8.3.1",
     "numpy>=2.4.2",
