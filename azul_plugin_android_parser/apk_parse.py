@@ -10,7 +10,7 @@ import re
 import struct
 import zipfile
 from collections import defaultdict
-from typing import Annotated
+from typing import Annotated, Any
 from zipfile import ZipFile
 
 import magic
@@ -247,7 +247,10 @@ class ApkParse:
 
         Returns: dictionary containing dict[file_type] = ["file1_name", "file2_name"]
         """
-        zip_files: dict[str, tuple[str, str]] = defaultdict(list)
+        if not self.archive:
+            raise ValueError("APK not loaded, cannot process file types.")
+
+        zip_files: dict[str, list[str]] = defaultdict(list)
         for item in self.archive.infolist():
             try:
                 file_type = magic.from_buffer(self.archive.read(item))
@@ -260,19 +263,39 @@ class ApkParse:
 
     def strings_print(self):
         """Print strings for the loaded APK."""
-        res = self.apk.get_android_resources().get_strings_resources()
-        print(str(res))
+        if not self.apk:
+            raise ValueError("APK not loaded, cannot print strings.")
+
+        res = self.apk.get_android_resources()
+        if not res:
+            raise ValueError("No resources found, cannot print strings.")
+
+        res_strs = res.get_strings_resources()
+        print(str(res_strs))
         return True
 
     def manifest_print(self):
         """Print the XML manifest for the loaded apk."""
+        if not self.apk:
+            raise ValueError("APK not loaded, cannot print manifest.")
+
         manifest = self.apk.get_android_manifest_axml()
+        if not manifest:
+            raise ValueError("No manifest found, cannot print manifest.")
+
         print(manifest.get_xml())
         return True
 
     def resource_by_id(self, id):
         """Get a resource from an APK by it's id."""
-        resolver = axml.ARSCParser.ResourceResolver(self.apk.get_android_resources())
+        if not self.apk:
+            raise ValueError("APK not loaded, cannot get resource by id.")
+
+        resources = self.apk.get_android_resources()
+        if not resources:
+            raise ValueError("No resources found, cannot get resource by id.")
+
+        resolver = axml.ARSCParser.ResourceResolver(resources)
         return resolver.resolve(id)
 
 
@@ -331,7 +354,7 @@ class DexParse(object):
         """Get strings from the dex file."""
         for i in range(self.header["strings"][1]):
             try:
-                yield self._get_by_index("strings", 4, 0, i)[0].decode("utf-8")
+                yield self._get_by_index("strings", 4, 0, i)[0]
             except UnicodeDecodeError:
                 continue
 
@@ -367,7 +390,7 @@ class DexParse(object):
         ]
         return True
 
-    def _get_by_index(self, obj_type: str, obj_size: int, obj_pos: int, index: int) -> tuple[str, int]:
+    def _get_by_index(self, obj_type: str, obj_size: int, obj_pos: int, index: int) -> tuple[Any, Any]:
         """Internal method to get object from dex by index."""
         strings = self.header["strings"]
         if obj_type == "types":
