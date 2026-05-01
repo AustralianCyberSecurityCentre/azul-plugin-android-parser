@@ -145,17 +145,24 @@ class ApkParse:
 
     def process_apk_meta(self) -> ApkMeta:
         """Process the apk metadata."""
+        if not self.apk or not self.archive:
+            raise ValueError("APK not loaded, cannot process metadata.")
+
         permissions: dict[str, ApkPermission] = dict()
         for perm, perm_details in self.apk.get_details_permissions().items():
-            permissions[perm] = ApkPermission(level=perm_details[0], label=perm_details[1], detail=perm_details[2])
+            permissions[perm] = ApkPermission(
+                level=perm_details[0], label=perm_details[1], description=perm_details[2]
+            )
 
         permissions_literal = self.apk.get_permissions()
         sdk_build_info = SdkBuildInfo(
-            target=self.apk.get_target_sdk_version(),
-            min=self.apk.get_min_sdk_version(),
-            max=self.apk.get_max_sdk_version(),
+            target=int(self.apk.get_target_sdk_version()),
+            min=int(self.apk.get_min_sdk_version()),
+            max=int(self.apk.get_max_sdk_version()),
         )
-        version = SdkVersion(version_code=self.apk.get_androidversion_code(), name=self.apk.get_androidversion_name())
+        version = SdkVersion(
+            version_code=int(self.apk.get_androidversion_code()), name=self.apk.get_androidversion_name()
+        )
 
         icon_path: str | None = ""
         icon_sha256 = ""
@@ -231,7 +238,7 @@ class ApkParse:
             activity_intent_filter=activity_if,
             service_intent_filter=service_if,
             signatures=signatures,
-            signature_version=signature_version,
+            signature_version=int(signature_version) if signature_version is not None else 0,
             certs=certs,
         )
 
