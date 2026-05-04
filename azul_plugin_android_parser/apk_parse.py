@@ -355,7 +355,10 @@ class DexParse(object):
         """Get strings from the dex file."""
         for i in range(self.header["strings"][1]):
             try:
-                yield self._get_by_index("strings", 4, 0, i)[0]
+                string: str | bytes = self._get_by_index("strings", 4, 0, i)[0]
+                if isinstance(string, bytes):
+                    string = string.decode("utf-8", errors="ignore")
+                yield string
             except UnicodeDecodeError:
                 continue
 
