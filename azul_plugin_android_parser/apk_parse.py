@@ -156,12 +156,13 @@ class ApkParse:
 
         permissions_literal = self.apk.get_permissions()
         sdk_build_info = SdkBuildInfo(
-            target=int(self.apk.get_target_sdk_version()),
-            min=int(self.apk.get_min_sdk_version()),
-            max=int(self.apk.get_max_sdk_version()),
+            target=self.apk.get_target_sdk_version(),  # ty: ignore[invalid-argument-type]
+            min=self.apk.get_min_sdk_version(),  # ty: ignore[invalid-argument-type]
+            max=self.apk.get_max_sdk_version(),  # ty: ignore[invalid-argument-type]
         )
         version = SdkVersion(
-            version_code=int(self.apk.get_androidversion_code()), name=self.apk.get_androidversion_name()
+            version_code=self.apk.get_androidversion_code(),  # ty: ignore[invalid-argument-type]
+            name=self.apk.get_androidversion_name(),
         )
 
         icon_path: str | None = ""
@@ -238,7 +239,7 @@ class ApkParse:
             activity_intent_filter=activity_if,
             service_intent_filter=service_if,
             signatures=signatures,
-            signature_version=int(signature_version) if signature_version is not None else 0,
+            signature_version=signature_version,  # ty: ignore[invalid-argument-type]
             certs=certs,
         )
 
