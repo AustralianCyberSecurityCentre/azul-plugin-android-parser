@@ -87,9 +87,12 @@ class AzulPluginAndroidParser(BinaryPlugin):
         Feature("apk_cert_subject", "The subject of the certificate", type=FeatureType.String),
     ]
 
-    def execute(self, job: Job) -> dict:
+    def execute(self, job: Job) -> State | None:
         """Run android parser on suspected android apk files."""
         data = job.get_data()
+        if data is None:
+            return State(State.Label.OPT_OUT, message="Job contained no data to parse.")
+
         binary = data.readall()
         apk_file = apk_parse.ApkParse(binary)
         if not apk_file.load_apk():
