@@ -90,9 +90,6 @@ class AzulPluginAndroidParser(BinaryPlugin):
     def execute(self, job: Job) -> State | None:
         """Run android parser on suspected android apk files."""
         data = job.get_data()
-        if data is None:
-            return State(State.Label.OPT_OUT, message="Job contained no data to parse.")
-
         binary = data.readall()
         apk_file = apk_parse.ApkParse(binary)
         if not apk_file.load_apk():
