@@ -156,11 +156,11 @@ class ApkParse:
 
         permissions_literal = self.apk.get_permissions()
         sdk_build_info = SdkBuildInfo(
-            target=self.apk.get_target_sdk_version(),  # ty: ignore[invalid-argument-type] ty doesn't understand pydantic Annotated type conversions
-            min=self.apk.get_min_sdk_version(),  # ty: ignore[invalid-argument-type]
-            max=self.apk.get_max_sdk_version(),  # ty: ignore[invalid-argument-type]
+            target=self.apk.get_target_sdk_version(),
+            min=self.apk.get_min_sdk_version(),
+            max=self.apk.get_max_sdk_version(),
         )
-        version = SdkVersion(version_code=self.apk.get_androidversion_code(), name=self.apk.get_androidversion_name())  # ty: ignore[invalid-argument-type]
+        version = SdkVersion(version_code=self.apk.get_androidversion_code(), name=self.apk.get_androidversion_name())
 
         icon_path: str | None = ""
         icon_sha256 = ""
