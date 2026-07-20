@@ -10,7 +10,7 @@ import re
 import struct
 import zipfile
 from collections import defaultdict
-from typing import Annotated
+from typing import Annotated, Any
 from zipfile import ZipFile
 
 import magic
@@ -102,12 +102,12 @@ class ApkMeta(CustomBaseModel):
 class ApkParse:
     """Parse an android APK file."""
 
-    def __init__(self, binary, log_level=logging.CRITICAL):
+    def __init__(self, binary: bytes, log_level=logging.CRITICAL):
         # Prevent androguard printing out it's large number of logs
         androconf.logger.disable("")
         logging.basicConfig(level=log_level)
         self.log = logging.getLogger()
-        self.binary = binary
+        self.binary: bytes = binary
         self.archive = None
         self.apk = None
 
@@ -117,7 +117,7 @@ class ApkParse:
         (determined by parsing the manifest).
         """
         try:
-            loaded_apk = apk.APK(self.binary, True)
+            loaded_apk = apk.APK(self.binary, True)  # ty: ignore[invalid-argument-type] filename can safely be bytes if raw==True; androguard needs to update their type hint
         except (zipfile.BadZipfile, TypeError, ValueError) as error:
             self.log.debug("Zip or Androguard error: " + str(error))
             # raise
@@ -145,9 +145,14 @@ class ApkParse:
 
     def process_apk_meta(self) -> ApkMeta:
         """Process the apk metadata."""
+        if self.apk is None:
+            raise AttributeError("self.apk is not set (was self.load_apk() called?)")
+
         permissions: dict[str, ApkPermission] = dict()
         for perm, perm_details in self.apk.get_details_permissions().items():
-            permissions[perm] = ApkPermission(level=perm_details[0], label=perm_details[1], detail=perm_details[2])
+            permissions[perm] = ApkPermission(
+                level=perm_details[0], label=perm_details[1], description=perm_details[2]
+            )
 
         permissions_literal = self.apk.get_permissions()
         sdk_build_info = SdkBuildInfo(
@@ -161,6 +166,8 @@ class ApkParse:
         icon_sha256 = ""
         try:
             icon_path = self.apk.get_app_icon()
+            if self.archive is None:
+                raise ValueError("self.archive is not set (was self.load_apk() called?)")
             if icon_path is not None:
                 icon_sha256 = hashlib.sha256(self.archive.read(icon_path), usedforsecurity=False).hexdigest()
         except ValueError as error:
@@ -231,7 +238,7 @@ class ApkParse:
             activity_intent_filter=activity_if,
             service_intent_filter=service_if,
             signatures=signatures,
-            signature_version=signature_version,
+            signature_version=signature_version,  # ty: ignore[invalid-argument-type] ty doesn't understand pydantic Annotated type conversions
             certs=certs,
         )
 
@@ -240,7 +247,10 @@ class ApkParse:
 
         Returns: dictionary containing dict[file_type] = ["file1_name", "file2_name"]
         """
-        zip_files: dict[str, tuple[str, str]] = defaultdict(list)
+        if self.archive is None:
+            raise AttributeError("self.archive is not set (was self.load_apk() called?)")
+
+        zip_files: dict[str, list[str]] = defaultdict(list)
         for item in self.archive.infolist():
             try:
                 file_type = magic.from_buffer(self.archive.read(item))
@@ -253,22 +263,38 @@ class ApkParse:
 
     def strings_print(self):
         """Print strings for the loaded APK."""
-        res = self.apk.get_android_resources().get_strings_resources()
-        print(str(res))
+        if self.apk is None:
+            raise AttributeError("self.apk is not set (was self.load_apk() called?)")
+
+        android_res = self.apk.get_android_resources()
+        if android_res is not None:
+            print(str(android_res.get_strings_resources()))
         return True
 
     def manifest_print(self):
         """Print the XML manifest for the loaded apk."""
+        if self.apk is None:
+            raise AttributeError("self.apk is not set (was self.load_apk() called?)")
+
         manifest = self.apk.get_android_manifest_axml()
-        print(manifest.get_xml())
+        if manifest is not None:
+            print(manifest.get_xml())
         return True
 
     def resource_by_id(self, id):
         """Get a resource from an APK by it's id."""
-        resolver = axml.ARSCParser.ResourceResolver(self.apk.get_android_resources())
+        if self.apk is None:
+            raise AttributeError("self.apk is not set (was self.load_apk() called?)")
+
+        resources = self.apk.get_android_resources()
+        if resources is None:
+            raise AttributeError("no resources found, could not resolve by id")
+
+        resolver = axml.ARSCParser.ResourceResolver(resources)
         return resolver.resolve(id)
 
 
+# FUTURE: it looks like DexParse is dead code, or at least it's not referenced/used anywhere else in the plugin. Should it be removed?
 class DexParse(object):
     """Parse a Dex file for analysis."""
 
@@ -360,7 +386,7 @@ class DexParse(object):
         ]
         return True
 
-    def _get_by_index(self, obj_type: str, obj_size: int, obj_pos: int, index: int) -> tuple[str, int]:
+    def _get_by_index(self, obj_type: str, obj_size: int, obj_pos: int, index: int) -> tuple[Any, Any]:
         """Internal method to get object from dex by index."""
         strings = self.header["strings"]
         if obj_type == "types":
