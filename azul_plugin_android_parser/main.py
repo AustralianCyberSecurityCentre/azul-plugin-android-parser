@@ -61,7 +61,7 @@ class AzulPluginAndroidParser(BinaryPlugin):
             "Sha256 hash of the first icon file name as determined by the manifest",
             type=FeatureType.String,
         ),
-        Feature("apk_icon_path", "Path to the default icon", type=FeatureType.String),
+        Feature("apk_icon_path", "Path to the default icon", type=FeatureType.Filepath),
         Feature("apk_dex_count", "Indicates weather the APK is multi-dex", type=FeatureType.Integer),
         Feature(
             "apk_intent_filters",
